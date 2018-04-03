@@ -52,18 +52,13 @@ public class history extends Fragment {
             @Override
             public void run() {
                 all_forms = formDatabase.formsDao().fetchAllForms();
-                List<String> list = new ArrayList<String>();
-                for (int i=0; i<all_forms.size(); i++) {
-                    list.add(all_forms.get(i).getFormName());
-                }
-                final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>
-                        (getActivity(), R.layout.form_adapter, list);
 
                 Handler mainHandler = new Handler(getActivity().getMainLooper());
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        lv.setAdapter(arrayAdapter);
+                        FormAdapter adapter = new FormAdapter(getContext(), all_forms);
+                        lv.setAdapter(adapter);
                     }
                 });
 

@@ -11,71 +11,34 @@ import android.widget.TextView;
 import com.example.kraken.lab2.models.Forms;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by kraken on 4/3/18.
  */
 
-public class FormAdapter extends ArrayAdapter<Forms> implements View.OnClickListener{
-
-    private ArrayList<Forms> dataSet;
-    Context mContext;
-
-    // View lookup cache
-    private static class ViewHolder {
-        TextView nameH;
-        TextView commentH;
-        TextView dateH;
+public class FormAdapter extends ArrayAdapter<Forms> {
+    public FormAdapter(Context context, List<Forms> forms) {
+        super(context, 0, forms);
     }
-
-    public FormAdapter(ArrayList<Forms> data, Context context) {
-        super(context, R.layout.form_adapter, data);
-        this.dataSet = data;
-        this.mContext=context;
-
-    }
-
-    @Override
-    public void onClick(View v) {
-
-        int position=(Integer) v.getTag();
-        Object object= getItem(position);
-        Forms dataModel=(Forms)object;
-    }
-
-    private int lastPosition = -1;
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         // Get the data item for this position
-        Forms dataModel = getItem(position);
+        Forms form = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
-        ViewHolder viewHolder; // view lookup cache stored in tag
-
-        final View result;
-
         if (convertView == null) {
-
-            viewHolder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.form_adapter, parent, false);
-            viewHolder.nameH = (TextView) convertView.findViewById(R.id.name_h);
-            viewHolder.commentH = (TextView) convertView.findViewById(R.id.comment_h);
-            viewHolder.dateH = (TextView) convertView.findViewById(R.id.date_h);
-
-            result=convertView;
-
-            convertView.setTag(viewHolder);
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
-            result=convertView;
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.form_adapter, parent, false);
         }
-
-        viewHolder.nameH.setText(dataModel.getFormName());
-        viewHolder.commentH.setText(dataModel.getFormComment());
-        viewHolder.dateH.setText(dataModel.getFormDate());
+        // Lookup view for data population
+        TextView name_h = (TextView) convertView.findViewById(R.id.name_h);
+        TextView comment_h = (TextView) convertView.findViewById(R.id.comment_h);
+        TextView date_h = (TextView) convertView.findViewById(R.id.date_h);
+        // Populate the data into the template view using the data object
+        name_h.setText(form.getFormName());
+        comment_h.setText(form.getFormComment());
+        date_h.setText(form.getFormDate());
         // Return the completed view to render on screen
         return convertView;
     }
 }
-
