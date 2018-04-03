@@ -1,5 +1,6 @@
 package com.example.kraken.lab2;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -107,6 +108,10 @@ public class MainActivity extends AppCompatActivity
             transaction.addToBackStack(null);
             transaction.commit();
 
+        } else if (id == R.id.nav_logout) {
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+            MainActivity.this.startActivity(intent);
+            finish();
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
