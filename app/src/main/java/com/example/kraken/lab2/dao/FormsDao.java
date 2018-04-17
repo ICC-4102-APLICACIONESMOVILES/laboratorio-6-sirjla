@@ -1,4 +1,4 @@
-package com.example.kraken.lab2.dao_access;
+package com.example.kraken.lab2.dao;
 
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
@@ -30,4 +30,7 @@ public interface FormsDao {
 
     @Delete
     void deleteForm (Forms form);
+
+    @Query("DELETE FROM Forms;")
+    void deleteAllForms();
 }

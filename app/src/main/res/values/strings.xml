@@ -41,5 +41,6 @@
     <string name="date">Date</string>
     <string name="comment">Comment</string>
     <string name="submit">Submit</string>
+    <string name="answer_form">Answer Form</string>
 
 </resources>

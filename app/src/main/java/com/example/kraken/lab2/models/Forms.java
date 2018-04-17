@@ -14,6 +14,7 @@ public class Forms {
     private String formDate;
     private String formCategory;
     private String formComment;
+    private Integer questions;
 
     public Forms() {
     }
@@ -32,4 +33,6 @@ public class Forms {
     public String getFormComment() {return formComment;}
     public void setFormComment(String formComment) {this.formComment = formComment;}
 
+    public Integer getQuestions() {return questions;}
+    public void setQuestions(Integer questions) {this.questions = questions;}
 }
