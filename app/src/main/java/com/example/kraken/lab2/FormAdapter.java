@@ -35,11 +35,13 @@ public class FormAdapter extends ArrayAdapter<Forms> {
         TextView comment_h = (TextView) convertView.findViewById(R.id.comment_h);
         TextView date_h = (TextView) convertView.findViewById(R.id.date_h);
         TextView questions_number = (TextView) convertView.findViewById(R.id.question_number);
+        TextView form_id = (TextView) convertView.findViewById(R.id.form_id);
         // Populate the data into the template view using the data object
         name_h.setText(form.getFormName());
         comment_h.setText(form.getFormComment());
         date_h.setText(form.getFormDate());
         questions_number.setText(form.getQuestions().toString());
+        form_id.setText(Integer.toString(form.getFormId()));
         // Return the completed view to render on screen
         return convertView;
     }

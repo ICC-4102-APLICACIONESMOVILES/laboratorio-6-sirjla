@@ -1,10 +1,16 @@
 package com.example.kraken.lab2;
 
 
+import android.Manifest;
+import android.app.Activity;
 import android.arch.persistence.room.Room;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +24,15 @@ import android.widget.TextView;
 
 import com.example.kraken.lab2.databases.FormDatabase;
 import com.example.kraken.lab2.models.Forms;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.SettingsClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +43,9 @@ public class FormAnswer extends Fragment {
     public FormDatabase formDatabase;
     public List<Forms> formsList;
     private HashMap<Integer, Integer> formsHash = new HashMap<Integer, Integer>();
+    private int form;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 0;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -36,10 +54,32 @@ public class FormAnswer extends Fragment {
         formDatabase = Room.databaseBuilder(getActivity().getApplicationContext(),
                 FormDatabase.class, FORMS_DATABASE).fallbackToDestructiveMigration().build();
 
-
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_answer, container, false);
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request.
+        }
+    }
+
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
@@ -47,12 +87,57 @@ public class FormAnswer extends Fragment {
 
         LinearLayout ly = (LinearLayout) view.findViewById(R.id.answer_container);
 
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(getContext());
+
         getForms(view);
         insertQuestion(view, ly);
         insertQuestion(view, ly);
 
+        Bundle bundle = getArguments();
+        if (bundle != null) {
+            form = bundle.getInt("form");
+        }
+
         Button submit_button = new Button(getContext());
         submit_button.setText("Submit");
+        submit_button.setOnClickListener(new Button.OnClickListener() {
+            public void onClick(View v) {
+                System.out.println("---------------------------");
+                System.out.println(form);
+
+                if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                    System.out.println("LA PUTA MADRE");
+                    ActivityCompat.requestPermissions(getActivity(),
+                            new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                            MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                    return;
+                }
+                mFusedLocationClient.getLastLocation()
+                        .addOnSuccessListener((Activity) getContext(), new OnSuccessListener<Location>() {
+                            @Override
+                            public void onSuccess(Location location) {
+                                // Got last known location. In some rare situations this can be null.
+                                if (location != null) {
+                                    System.out.println("latitude:");
+                                    System.out.println(location.getLatitude());
+                                    System.out.println("longitude:");
+                                    System.out.println(location.getLongitude());
+                                }
+                                else {
+                                    System.out.println("LA PUTA MADRE X2");
+                                }
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                System.out.println("Algo Fallo");
+                                System.out.println(e.getMessage());
+                            }
+                        });
+
+            }
+        });
         ly.addView(submit_button);
 
         /*

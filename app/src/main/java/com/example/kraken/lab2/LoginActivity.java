@@ -36,7 +36,10 @@ import android.widget.Toast;
 
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.example.kraken.lab2.databases.FormDatabase;
+import com.example.kraken.lab2.models.Forms;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -62,8 +65,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mLoginFormView;
 
     private NetworkManager networkManager;
+    private JSONArray formsJson;
 
-
+    private static final String DATABASE_NAME = "forms_db";
+    public FormDatabase formDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +76,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
 
         networkManager = NetworkManager.getInstance(this);
+
+        formDatabase = Room.databaseBuilder(getApplicationContext(),
+                FormDatabase.class, DATABASE_NAME).fallbackToDestructiveMigration().build();
 
         // Set up the login form.
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email);
@@ -148,7 +156,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // perform the user login attempt.
             //showProgress(true);
             //mAuthTask.execute((Void) null);
-            Toast.makeText(getApplicationContext(), "The email and password are valid", Toast.LENGTH_LONG).show();
             //callback(email, password);
             login(email, password);
         }
@@ -162,6 +169,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 public void onResponse(JSONObject response) {
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                     LoginActivity.this.startActivity(intent);
+                    Toast.makeText(getApplicationContext(), "The email and password are valid", Toast.LENGTH_LONG).show();
+                    getForms();
                     finish();
                 }
             }, new Response.ErrorListener() {
@@ -186,6 +195,67 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
         return password.length() > 4;
+    }
+
+    private void getForms(){
+        networkManager.getForms(new Response.Listener<JSONObject>() {
+
+            @Override
+            public void onResponse(JSONObject response) {
+                try {
+                    formsJson = response.getJSONArray("0");
+                    parseForms();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // TODO: Handle error
+                System.out.println(error);
+            }
+        });
+    }
+
+    private void parseForms() throws JSONException {
+        String name;
+        String date;
+        String category;
+        String comment;
+        int questions;
+
+        category = "Categoria 1";
+        comment = "Comentario";
+
+        final List<Forms> formsList =  new ArrayList<Forms>();
+
+        Forms form;
+
+        for (int i=0; i<formsJson.length(); i++){
+            form = new Forms();
+            name = formsJson.getJSONObject(i).get("name").toString();
+            date = formsJson.getJSONObject(i).get("created_at").toString();
+            questions = formsJson.getJSONObject(i).getJSONArray("fieldsets").length();
+
+            form.setFormName(name);
+            form.setFormDate(date);
+            form.setFormComment(comment);
+            form.setFormCategory(category);
+            form.setQuestions(questions);
+
+            formsList.add(form);
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                formDatabase.formsDao().deleteAllForms();
+                formDatabase.formsDao().insertMultipleForms(formsList);
+            }
+        }) .start();
+
     }
 
     /**

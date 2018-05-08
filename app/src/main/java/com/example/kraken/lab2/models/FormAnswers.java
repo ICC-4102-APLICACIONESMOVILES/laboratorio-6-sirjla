@@ -6,28 +6,26 @@ import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
 @Entity
-public class Answers {
+public class FormAnswers {
     @NonNull
     @PrimaryKey (autoGenerate = true)
-    private int answerId;
+    private int formAnswerId;
 
-    private String content;
+    @ForeignKey(entity = Forms.class, parentColumns = "formId", childColumns = "form")
+    private int form;
+
     @ForeignKey(entity = Questions.class, parentColumns = "questionId", childColumns = "question")
     private int question;
-    private String answerSet;
 
-
-    public Answers() {
+    public FormAnswers() {
     }
-    public int getAnswerId() {return answerId;}
-    public void setAnswerId(int answerId) {this.answerId = answerId;}
 
-    public String getContent() {return content;}
-    public void setContent(String content) {this.content = content;}
+    public int getFormAnswerId() {return formAnswerId;}
+    public void setFormAnswerId(int formAnswerId) {this.formAnswerId = formAnswerId;}
 
     public int getQuestion() {return question;}
     public void setQuestion(int question) {this.question = question;}
 
-    public String getAnswerSet() {return answerSet;}
-    public void setAnswerSet(String answerSet) {this.answerSet = answerSet;}
+    public int getForm() {return form;}
+    public void setForm(int form) {this.form = form;}
 }

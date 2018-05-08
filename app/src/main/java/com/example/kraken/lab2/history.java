@@ -10,6 +10,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -58,7 +59,7 @@ public class history extends Fragment {
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         formsJson = null;
-        getForms(view);
+        getAll(view);
     }
 
     private void getAll(View view){
@@ -72,77 +73,22 @@ public class history extends Fragment {
                 mainHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        FormAdapter adapter = new FormAdapter(getContext(), all_forms);
+                        final FormAdapter adapter = new FormAdapter(getContext(), all_forms);
                         lv.setAdapter(adapter);
+                        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                                Fragment fragment = new FormAnswer();
+                                getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit();
+                                Bundle bundle = new Bundle();
+                                bundle.putInt("form", adapter.getItem(i).getFormId());
+                                fragment.setArguments(bundle);
+                            }
+                        });
                     }
                 });
 
             }
         }) .start();
-    }
-
-    private void getForms(final View view){
-        networkManager.getForms(new Response.Listener<JSONObject>() {
-
-            final View v = view;
-
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    formsJson = response.getJSONArray("0");
-                    parseForms();
-                    getAll(v);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                // TODO: Handle error
-                System.out.println(error);
-            }
-        });
-    }
-
-    private void parseForms() throws JSONException {
-        String name;
-        String date;
-        String category;
-        String comment;
-        int questions;
-
-        category = "Categoria 1";
-        comment = "Comentario";
-
-        final List<Forms> formsList =  new ArrayList<Forms>();
-
-        Forms form;
-
-        for (int i=0; i<formsJson.length(); i++){
-            form = new Forms();
-            System.out.println("----");
-            name = formsJson.getJSONObject(Integer.parseInt(Integer.toString(i))).get("name").toString();
-            date = formsJson.getJSONObject(Integer.parseInt(Integer.toString(i))).get("created_at").toString();
-            questions = formsJson.getJSONObject(Integer.parseInt(Integer.toString(i))).getJSONArray("fieldsets").length();
-
-            form.setFormName(name);
-            form.setFormDate(date);
-            form.setFormComment(comment);
-            form.setFormCategory(category);
-            form.setQuestions(questions);
-
-            formsList.add(form);
-        }
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-            formDatabase.formsDao().deleteAllForms();
-            formDatabase.formsDao().insertMultipleForms(formsList);
-            }
-        }) .start();
-
     }
 }

@@ -13,8 +13,6 @@ public class Questions {
 
     private String content;
     private String type;
-    @ForeignKey(entity = Forms.class, parentColumns = "formId", childColumns = "form")
-    private int form;
 
     public Questions() {
     }
@@ -26,7 +24,4 @@ public class Questions {
 
     public String getType() {return type;}
     public void setType(String type) {this.type = type;}
-
-    public int getForm() {return form;}
-    public void setForm(int form) {this.form = form;}
 }
